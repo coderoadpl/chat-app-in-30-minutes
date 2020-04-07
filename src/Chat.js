@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react'
 
-import { List, ListItem, ListItemText, TextField, Button } from '@material-ui/core'
+import { List, ListItem, ListItemText, TextField, Button, ListItemAvatar, Avatar } from '@material-ui/core'
 
-import { database } from './firebaseConf'
+import { auth, database } from './firebaseConf'
 
 const mapObjectToArray = (obj) => (
   Object.entries(obj || {})
@@ -28,12 +28,19 @@ const Chat = (props) => {
   }, [])
 
   const onSendClick = () => {
+    const user = auth.currentUser
     const newMessage = {
       text: newMessageText,
+      avatar: user && user.photoURL,
+      email: user && user.email,
     }
 
     setNewMessageText('')
     database.ref('messages').push(newMessage)
+  }
+
+  const onLogOutClick = () => {
+    auth.signOut()
   }
 
   return (
@@ -44,9 +51,14 @@ const Chat = (props) => {
 
             return (
               <ListItem key={message.key}>
+                <ListItemAvatar>
+                  <Avatar 
+                    src={message.avatar}
+                  />
+                </ListItemAvatar>
                 <ListItemText
                   primary={message.text}
-                  secondary={'secondary'}
+                  secondary={message.email}
                 />
               </ListItem>
             )
@@ -61,6 +73,11 @@ const Chat = (props) => {
         onClick={onSendClick}
       >
         SEND
+      </Button>
+      <Button
+        onClick={onLogOutClick}
+      >
+        LOG OUT
       </Button>
     </>
   )
